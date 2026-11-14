@@ -20,7 +20,7 @@ const ASSET_FILENAME = "emerald.jpg";
 const TARGET_WIDTH = 1024;
 const TARGET_HEIGHT = 1024;
 const BYTE_LIMIT = 1048576;
-const EXPECTED_DIGEST = "c9a4050fff07db6d19daa7d5c664cf0fc8da2a09461972c25ccf145e7e33d1b7";
+const EXPECTED_DIGEST = "2d4c6accb09102b876778e28ac6f852ad0ed76e2e86203f8ebee1991d79ce60a";
 
 function scanSofSegmentSize(raw: Buffer): { width: number; height: number } {
   if (raw.length < 4 || raw[0] !== 0xff || raw[1] !== 0xd8) {
