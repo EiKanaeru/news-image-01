@@ -4,11 +4,11 @@ import * as crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 /**
- * EiKanaeru (@eikanaeru) — Emerald World Ledger: Deep Forest & Gold 28-Story Brief (13 Nov 2026)
- * Verified Friday 13 November 2026 multi-continent illustrated edition (28 stories).
+ * news-image-01: The Emerald Dispatch: 30-Story Illustrated Financial & World Edition (13 Nov 2026)
+ * Verified Friday 13 November 2026 multi-continent illustrated edition (30 stories).
  */
 
-interface EmeraldBriefHeader {
+interface BroadsheetSpec {
   format: "JPEG";
   width: number;
   height: number;
@@ -16,13 +16,13 @@ interface EmeraldBriefHeader {
   digest: string;
 }
 
-const ASSET_FILENAME = "emerald.jpg";
+const ASSET_FILENAME = "emerald_dispatch.jpg";
 const TARGET_WIDTH = 1024;
 const TARGET_HEIGHT = 1024;
 const BYTE_LIMIT = 1048576;
-const EXPECTED_DIGEST = "2d4c6accb09102b876778e28ac6f852ad0ed76e2e86203f8ebee1991d79ce60a";
+const EXPECTED_DIGEST = "31f6be79e88ea71c4552480b7762e4574de58b9361582aed75f5994dd861c1cc";
 
-function scanSofSegmentSize(raw: Buffer): { width: number; height: number } {
+function inspectSofHeader(raw: Buffer): { width: number; height: number } {
   if (raw.length < 4 || raw[0] !== 0xff || raw[1] !== 0xd8) {
     throw new Error("Invalid JPEG header: missing SOI marker");
   }
@@ -58,13 +58,12 @@ function scanSofSegmentSize(raw: Buffer): { width: number; height: number } {
   throw new Error("No SOF0/SOF2 resolution marker discovered");
 }
 
-// [V1_BASELINE_REVISION_MARKER]
-function verifyEmeraldAsset(assetPath: string): { payload: Buffer; meta: EmeraldBriefHeader } {
+function verifyBroadsheetPlate(assetPath: string): { payload: Buffer; meta: BroadsheetSpec } {
   const payload = fs.readFileSync(assetPath);
   if (payload.length === 0 || payload.length > BYTE_LIMIT) {
     throw new Error(`Asset byte count ${payload.length} violates 1 MiB ceiling`);
   }
-  const { width, height } = scanSofSegmentSize(payload);
+  const { width, height } = inspectSofHeader(payload);
   if (width !== TARGET_WIDTH || height !== TARGET_HEIGHT) {
     throw new Error(`Expected ${TARGET_WIDTH}x${TARGET_HEIGHT}, observed ${width}x${height}`);
   }
@@ -85,7 +84,7 @@ function emitEntry(): void {
   if (!resolved) {
     throw new Error(`Missing source front-page graphic: ${ASSET_FILENAME}`);
   }
-  const { payload, meta } = verifyEmeraldAsset(resolved);
+  const { payload, meta } = verifyBroadsheetPlate(resolved);
   const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
   fs.mkdirSync(outDir, { recursive: true });
   const target = path.join(outDir, "entry.png");
